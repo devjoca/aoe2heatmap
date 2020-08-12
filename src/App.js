@@ -7,7 +7,7 @@ import useSWR from 'swr';
 import './App.css';
 
 const summarizeData = function (arr) {
-  return arr.reduce(function (obj, profile) {
+  const data = arr.reduce(function (obj, profile) {
     var key = profile['country'];
     if (!obj.hasOwnProperty(key)) {
       obj[key] = {};
@@ -17,7 +17,13 @@ const summarizeData = function (arr) {
     obj[key]['players'].push(profile);
     obj[key]['totalRatings'] += profile.rating;
     return obj;
-  }, {});
+  }, {})
+
+  for (const [key, value] of Object.entries(data)) {
+    data[key].avgRating = value.totalRatings / value.players.length
+  }
+
+  return data
 };
 
 const fetcher = url => {
@@ -35,7 +41,7 @@ const App = () => {
   useEffect(() => {
     if (data) {
       const colorScale = scaleQuantile()
-        .domain(Object.keys(data).map(k => data[k].totalRatings / data[k].players.length))
+        .domain(Object.keys(data).map(k => data[k].avgRating))
         .range([
           "#ffedea",
           "#ffcec5",
