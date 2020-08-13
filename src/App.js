@@ -3,8 +3,11 @@ import { scaleQuantile } from "d3-scale";
 import mapboxgl from 'mapbox-gl';
 import axios from 'axios';
 import useSWR from 'swr';
+import chroma from 'chroma-js';
 
 import './App.css';
+
+mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCES_TOKEN;
 
 const summarizeData = function (arr) {
   const data = arr.reduce(function (obj, profile) {
@@ -27,7 +30,7 @@ const summarizeData = function (arr) {
 };
 
 const fetcher = url => {
-  return axios.get('https://thingproxy.freeboard.io/fetch/https://aoe2.net/api/leaderboard?game=aoe2de&leaderboard_id=3&start=1&count=100')
+  return axios.get(url)
     .then(({ data }) => {
       return summarizeData(data.leaderboard);
     })
@@ -35,24 +38,23 @@ const fetcher = url => {
 
 const App = () => {
   const mapContainerRef = useRef(null);
-  const { data } = useSWR('https://thingproxy.freeboard.io/fetch/https://aoe2.net/api/leaderboard?game=aoe2de&leaderboard_id=3&start=1&count=100', fetcher)
+  const { data } = useSWR('https://thingproxy.freeboard.io/fetch/https://aoe2.net/api/leaderboard?game=aoe2de&leaderboard_id=3&start=1&count=2500', fetcher)
 
 
   useEffect(() => {
     if (data) {
       const colorScale = scaleQuantile()
         .domain(Object.keys(data).map(k => data[k].avgRating))
-        .range([
-          "#ffedea",
-          "#ffcec5",
-          "#ffad9f",
-          "#ff8a75",
-          "#ff5533",
-          "#e2492d",
-          "#be3d26",
-          "#9a311f",
-          "#782618"
-        ]);
+        .range(
+          chroma.scale('YlOrRd')
+            .mode('lch').colors(9)
+        );
+      var expression = ['match', ['get', 'ISO_A2']];
+
+      for (const key in data) {
+        expression.push(key, colorScale(data[key].avgRating))
+      }
+      expression.push(colorScale(0))
 
       const map = new mapboxgl.Map({
         container: mapContainerRef.current,
@@ -71,7 +73,7 @@ const App = () => {
           type: 'fill',
           paint: {
             "fill-opacity": 0.8,
-            'fill-color': colorScale(0),
+            'fill-color': expression,
           },
         });
       });
@@ -80,7 +82,6 @@ const App = () => {
         console.log(mapEl.features[0])
       });
 
-      // map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
       return () => map.remove();
     }
 
