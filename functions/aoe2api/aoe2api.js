@@ -1,7 +1,7 @@
 const fetch = require('node-fetch')
 exports.handler = async function (event, context) {
   try {
-    const response = await fetch('https://aoe2.net/api/leaderboard?game=aoe2de&leaderboard_id=3&start=1&count=5000', {
+    const response = await fetch('https://aoe2.net/api/leaderboard?game=aoe2de&leaderboard_id=3&start=1&count=10000', {
       headers: { Accept: 'application/json' },
     })
     if (!response.ok) {
