@@ -40,7 +40,6 @@ const App = () => {
   const mapContainerRef = useRef(null);
   const { data } = useSWR('/.netlify/functions/aoe2api', fetcher)
 
-
   useEffect(() => {
     if (data) {
       const colorScale = scaleQuantile()
