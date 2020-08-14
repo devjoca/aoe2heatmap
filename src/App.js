@@ -38,7 +38,7 @@ const fetcher = url => {
 
 const App = () => {
   const mapContainerRef = useRef(null);
-  const { data } = useSWR('https://thingproxy.freeboard.io/fetch/https://aoe2.net/api/leaderboard?game=aoe2de&leaderboard_id=3&start=1&count=2500', fetcher)
+  const { data } = useSWR('/.netlify/functions/aoe2api', fetcher)
 
 
   useEffect(() => {
